@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-eap-ts-integ</artifactId>
+        <version>6.0.0.Final-SNAPSHOT</version>
+    </parent>
+
+    <!-- ********************************************************************************** -->
+    <!-- ******************************** JBossTS Integration ***************************** -->
+    <!-- ********************************************************************************** -->
+    <groupId>org.jboss.as</groupId>
+    <artifactId>jboss-eap-ts-integ-jbossts</artifactId>
+    <version>6.0.0.Final-SNAPSHOT</version>
+
+    <name>JBoss EAP Server Test Suite: Integration - JBossTS tests</name>
+
+    <properties>
+        <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
+        <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+
+        <version.jbossts>4.16.3.Final</version.jbossts>
+
+        <ds.second.jdbc.url></ds.second.jdbc.url>
+        <jbossts.jts>false</jbossts.jts>
+        <jbossts.store.type>StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction</jbossts.store.type>
+        <jbossts.credentials>cr1</jbossts.credentials>
+    </properties>
+
+    <profiles>
+
+        <profile>
+            <id>jbossts.integration.tests.profile</id>
+            <activation>
+                <property>
+                    <name>!ts.noJBossTS</name>
+                </property>
+            </activation>
+
+            <properties>
+                <byteman.home>${project.build.directory}/byteman</byteman.home>
+                <byteman.server.jvm.args>
+                    -Dorg.jboss.byteman.debug=true -Dorg.jboss.byteman.verbose=true -Dorg.jboss.byteman.contrib.dtest.rmiregistry.port=1199
+                    -Djboss.modules.system.pkgs=org.jboss.byteman
+                    -javaagent:${byteman.home}/byteman.jar=port:9091,listener:true,sys:${byteman.home}/byteman-dtest.jar
+                </byteman.server.jvm.args>
+            </properties>
+
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.byteman</groupId>
+                    <artifactId>byteman</artifactId>
+                    <version>${version.byteman}</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.byteman</groupId>
+                    <artifactId>byteman-dtest</artifactId>
+                    <version>${version.byteman}</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.jbossts</groupId>
+                    <artifactId>jbossjts</artifactId>
+                    <version>${version.jbossts}</version>
+                    <scope>test</scope>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>commons-httpclient</groupId>
+                            <artifactId>commons-httpclient</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>commons-logging</groupId>
+                            <artifactId>commons-logging</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>commons-codec</groupId>
+                            <artifactId>commons-codec</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>log4j</groupId>
+                            <artifactId>log4j</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.jbossas</groupId>
+                            <artifactId>jboss-server-manager</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.spec.javax.transaction</groupId>
+                            <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.spec.javax.resource</groupId>
+                            <artifactId>jboss-connector-api_1.5_spec</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>emma</groupId>
+                            <artifactId>emma</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>emma</groupId>
+                            <artifactId>emma_ant</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>tanukisoft</groupId>
+                            <artifactId>wrapper</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>jacorb</groupId>
+                            <artifactId>jacorb</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>jacorb</groupId>
+                            <artifactId>idl</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>jfree</groupId>
+                            <artifactId>jfreechart</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>jfree</groupId>
+                            <artifactId>jcommon</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.logmanager</groupId>
+                            <artifactId>jboss-logmanager</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.integration</groupId>
+                            <artifactId>jboss-transaction-spi</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss</groupId>
+                            <artifactId>jboss-transaction-spi</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.integration</groupId>
+                            <artifactId>jboss-corba-ots-spi</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.security</groupId>
+                            <artifactId>jbosssx</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.jbossas</groupId>
+                            <artifactId>jboss-host-controller</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.spec.javax.ejb</groupId>
+                            <artifactId>jboss-ejb-api_3.1_spec</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.remoting</groupId>
+                            <artifactId>jboss-remoting</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.spec.javax.servlet</groupId>
+                            <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>dom4j</groupId>
+                            <artifactId>dom4j</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>sun-jaxb</groupId>
+                            <artifactId>jaxb-api</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.logging</groupId>
+                            <artifactId>jboss-logging-spi</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>stax</groupId>
+                            <artifactId>stax-api</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.ws</groupId>
+                            <artifactId>jbossws-common</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>javax.xml.ws</groupId>
+                            <artifactId>jaxws-api</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.hibernate.javax.persistence</groupId>
+                            <artifactId>hibernate-jpa-2.0-api</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.logging</groupId>
+                            <artifactId>jboss-logging-generator</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.logging</groupId>
+                            <artifactId>jboss-logging-processor</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.hornetq</groupId>
+                            <artifactId>hornetq-core</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.netty</groupId>
+                            <artifactId>netty</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.ws</groupId>
+                            <artifactId>jbossws-api</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+            </dependencies>
+
+            <!--
+                Server configuration executions.
+            -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>jbossts-byteman.copy</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.jboss.byteman</groupId>
+                                            <artifactId>byteman</artifactId>
+                                            <version>${version.byteman}</version>
+                                        </artifactItem>
+                                        <artifactItem>
+                                            <groupId>org.jboss.byteman</groupId>
+                                            <artifactId>byteman-dtest</artifactId>
+                                            <version>${version.byteman}</version>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${byteman.home}</outputDirectory>
+                                    <stripVersion>true</stripVersion>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>build-jbossts.server</id>
+                                <phase>process-test-resources</phase>
+                                <goals><goal>run</goal></goals>
+                                <configuration>
+                                    <target>
+                                        <!-- Build the JBossTS servers. -->
+                                        <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/jbossts-build.xml">
+                                            <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
+                                            <property name="node1" value="${node1}"/>
+                                            <property name="jbossts.jts" value="${jbossts.jts}"/>
+                                            <property name="jbossts.hqobjectstore" value="${jbossts.hqobjectstore}"/>
+                                            <target name="build-jbossts"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!--
+                       Surefire test executions
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+
+                            <!-- Disable default-test execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals><goal>test</goal></goals>
+                                <phase>none</phase>
+                            </execution>
+                            <!-- JBossTS tests. -->
+                            <execution>
+                                <id>tests-jbossts.surefire</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/jbossts/**/*TestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <!-- FIXME add 'jts' suffix to test reports if jbossts.jts -->
+                                        <arquillian.launch>jbossts</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
+                                        <byteman.server.jvm.args>${byteman.server.jvm.args}</byteman.server.jvm.args>
+                                        <jbossts.store.type>${jbossts.store.type}</jbossts.store.type>
+                                        <jbossts.credentials>${jbossts.credentials}</jbossts.credentials>
+                                        <jbossts.wipeout.txs>false</jbossts.wipeout.txs>
+                                        <!-- database properties -->
+                                        <ds.db>${ds.db}</ds.db>
+                                        <ds.jdbc.driver>${ds.jdbc.driver}</ds.jdbc.driver>
+                                        <ds.jdbc.driver-xa>${ds.jdbc.driver-xa}</ds.jdbc.driver-xa>
+                                        <ds.jdbc.driver.version>${ds.jdbc.driver.version}</ds.jdbc.driver.version>
+                                        <ds.jdbc.url>${ds.jdbc.url}</ds.jdbc.url>
+                                        <ds.second.jdbc.url>${ds.second.jdbc.url}</ds.second.jdbc.url>
+                                        <ds.jdbc.driver.jar>${ds.jdbc.driver.jar}</ds.jdbc.driver.jar>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>jbossts.credentials.cr2.profile</id>
+            <activation>
+                <property>
+                    <name>jbossts.credentials</name>
+                    <value>cr2</value>
+                </property>
+            </activation>
+            <properties>
+                <jbossts.credentials>cr2</jbossts.credentials>
+            </properties>
+        </profile>
+        <profile>
+            <id>jbossts.credentials.cr3.profile</id>
+            <activation>
+                <property>
+                    <name>jbossts.credentials</name>
+                    <value>cr3</value>
+                </property>
+            </activation>
+            <properties>
+                <jbossts.credentials>cr3</jbossts.credentials>
+            </properties>
+        </profile>
+        <profile>
+            <id>jbossts.credentials.cr4.profile</id>
+            <activation>
+                <property>
+                    <name>jbossts.credentials</name>
+                    <value>cr4</value>
+                </property>
+            </activation>
+            <properties>
+                <jbossts.credentials>cr4</jbossts.credentials>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>jbossts.jts.profile</id>
+            <activation>
+                <property>
+                    <name>jbossts.jts</name>
+                </property>
+            </activation>
+            <properties>
+                <jbossts.jts>true</jbossts.jts>
+                <jbossts.store.type>StateManager/BasicAction/TwoPhaseCoordinator/ArjunaTransactionImple</jbossts.store.type>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>jbossts.hqobjectstore.profile</id>
+            <activation>
+                <property>
+                    <name>jbossts.hqobjectstore</name>
+                </property>
+            </activation>
+            <properties>
+                <jbossts.hqobjectstore>true</jbossts.hqobjectstore>
+            </properties>
+        </profile>
+
+        <profile>
+            <!-- specific profile for database changes  -->
+            <id>oraclerac.profile</id>
+            <activation>
+                <property>
+                    <name>ds</name>
+                    <value>oraclerac</value>
+                </property>
+            </activation>
+            <properties>
+                <ds.db>oracle</ds.db>
+                <ds.jdbc.driver>oracle.jdbc.OracleDriver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>oracle.jdbc.xa.client.OracleXADataSource</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=test)))</ds.jdbc.url>
+                <ds.second.jdbc.url>jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=test)))</ds.second.jdbc.url>
+                <ds.jdbc.driver.version>11.1.0.7.0</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+
+    </profiles>
+</project>

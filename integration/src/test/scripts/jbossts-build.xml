@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<project name="jbossts-build scripts">
+
+    <!-- import shared ant targets -->
+    <import file="common-targets.xml" as="common"/>
+
+    <target name="build-jbossts" description="Builds server configurations for JBossTS tests">
+
+        <echo message="Building config jbossas-jbossts"/>
+        <copy todir="target/jbossas-jbossts">
+            <fileset dir="target/jbossas"/>
+        </copy>
+
+        <condition property="jbossts.add.jts" value="true">
+       	    <istrue value="${jbossts.jts}"/>
+        </condition>
+        <antcall target="build-jbossts.add-jts"/>
+
+        <condition property="jbossts.add.hqobjectstore" value="true">
+       	    <istrue value="${jbossts.hqobjectstore}"/>
+        </condition>
+        <antcall target="build-jbossts.add-hqobjectstore"/>
+
+    </target>
+
+    <target name="build-jbossts.add-jts" if="jbossts.add.jts">
+        <ts.config-as.add-jts name="jbossas-jbossts"/>
+    </target>
+    
+    <target name="build-jbossts.add-hqobjectstore" if="jbossts.add.hqobjectstore">
+        <ts.config-as.add-hq-object-store name="jbossas-jbossts"/>
+    </target>
+    
+    
+
+</project>

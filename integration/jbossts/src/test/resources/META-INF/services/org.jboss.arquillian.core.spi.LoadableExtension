@@ -1,0 +1,2 @@
+org.jboss.as.test.jbossts.extension.JBossTSServerExtension
+org.jboss.as.test.jbossts.extension.ManualServerSetupExtension
