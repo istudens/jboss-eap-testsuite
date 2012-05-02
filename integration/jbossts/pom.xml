@@ -27,9 +27,8 @@
         <version.jbossts>4.16.3.Final</version.jbossts>
 
         <ds.second.jdbc.url></ds.second.jdbc.url>
-        <jbossts.jts>false</jbossts.jts>
-        <jbossts.store.type>StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction</jbossts.store.type>
         <jbossts.credentials>cr1</jbossts.credentials>
+        <report.name.suffix></report.name.suffix>
     </properties>
 
     <profiles>
@@ -58,7 +57,6 @@
                     <version>${version.byteman}</version>
                     <scope>test</scope>
                 </dependency>
-
                 <dependency>
                     <groupId>org.jboss.byteman</groupId>
                     <artifactId>byteman-dtest</artifactId>
@@ -265,7 +263,7 @@
                                         <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/jbossts-build.xml">
                                             <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
                                             <property name="node1" value="${node1}"/>
-                                            <property name="jbossts.jts" value="${jbossts.jts}"/>
+                                            <!--<property name="jbossts.jts" value="${jbossts.jts}"/>-->
                                             <property name="jbossts.hqobjectstore" value="${jbossts.hqobjectstore}"/>
                                             <target name="build-jbossts"/>
                                         </ant>
@@ -289,9 +287,48 @@
                                 <goals><goal>test</goal></goals>
                                 <phase>none</phase>
                             </execution>
-                            <!-- JBossTS tests. -->
+
+                            <!-- JBossTS tests on JTA. -->
                             <execution>
-                                <id>tests-jbossts.surefire</id>
+                                <id>tests-jbossts-jta.surefire</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/jbossts/**/*TestCase.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>org/jboss/as/test/jbossts/**/*TestCaseJTSOnly.java</exclude>
+                                    </excludes>
+
+                                    <reportNameSuffix>jta${report.name.suffix}</reportNameSuffix>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <!-- FIXME add 'jts' suffix to test reports if jbossts.jts -->
+                                        <arquillian.launch>jbossts</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
+                                        <byteman.server.jvm.args>${byteman.server.jvm.args}</byteman.server.jvm.args>
+                                        <jbossts.jts>false</jbossts.jts>
+                                        <jbossts.store.type>StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction</jbossts.store.type>
+                                        <jbossts.credentials>${jbossts.credentials}</jbossts.credentials>
+                                        <jbossts.wipeout.txs>false</jbossts.wipeout.txs>
+                                        <!-- database properties -->
+                                        <ds.db>${ds.db}</ds.db>
+                                        <ds.jdbc.driver>${ds.jdbc.driver}</ds.jdbc.driver>
+                                        <ds.jdbc.driver-xa>${ds.jdbc.driver-xa}</ds.jdbc.driver-xa>
+                                        <ds.jdbc.driver.version>${ds.jdbc.driver.version}</ds.jdbc.driver.version>
+                                        <ds.jdbc.url>${ds.jdbc.url}</ds.jdbc.url>
+                                        <ds.second.jdbc.url>${ds.second.jdbc.url}</ds.second.jdbc.url>
+                                        <ds.jdbc.driver.jar>${ds.jdbc.driver.jar}</ds.jdbc.driver.jar>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+
+                            <!-- JBossTS tests on JTS. -->
+                            <execution>
+                                <id>tests-jbossts-jts.surefire</id>
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
@@ -300,13 +337,16 @@
                                         <include>org/jboss/as/test/jbossts/**/*TestCase.java</include>
                                     </includes>
 
+                                    <reportNameSuffix>jts${report.name.suffix}</reportNameSuffix>
+
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <!-- FIXME add 'jts' suffix to test reports if jbossts.jts -->
                                         <arquillian.launch>jbossts</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                                         <byteman.server.jvm.args>${byteman.server.jvm.args}</byteman.server.jvm.args>
-                                        <jbossts.store.type>${jbossts.store.type}</jbossts.store.type>
+                                        <jbossts.jts>true</jbossts.jts>
+                                        <jbossts.store.type>StateManager/BasicAction/TwoPhaseCoordinator/ArjunaTransactionImple</jbossts.store.type>
                                         <jbossts.credentials>${jbossts.credentials}</jbossts.credentials>
                                         <jbossts.wipeout.txs>false</jbossts.wipeout.txs>
                                         <!-- database properties -->
@@ -364,6 +404,7 @@
             </properties>
         </profile>
 
+<!--
         <profile>
             <id>jbossts.jts.profile</id>
             <activation>
@@ -376,6 +417,7 @@
                 <jbossts.store.type>StateManager/BasicAction/TwoPhaseCoordinator/ArjunaTransactionImple</jbossts.store.type>
             </properties>
         </profile>
+-->
 
         <profile>
             <id>jbossts.hqobjectstore.profile</id>
@@ -386,6 +428,7 @@
             </activation>
             <properties>
                 <jbossts.hqobjectstore>true</jbossts.hqobjectstore>
+                <report.name.suffix>-hq</report.name.suffix>
             </properties>
         </profile>
 

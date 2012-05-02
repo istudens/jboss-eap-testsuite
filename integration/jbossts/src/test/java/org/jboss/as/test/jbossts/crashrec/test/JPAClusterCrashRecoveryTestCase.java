@@ -39,7 +39,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ManualServerSetup({
-        CrashRecoveryTestBase.TxEnvironmentSetup.class,
+        TxEnvironmentSetup.class,
+        CrashRecoveryTestBase.TxEnvironmentCheck.class,
         JPAClusterCrashRecoveryTestCase.XANoRecoveryDatasourceSetup.class,
         JPAClusterCrashRecoveryTestCase.XARecoveryDatasourceSetup.class})
 public class JPAClusterCrashRecoveryTestCase extends JPACrashRecoveryTestCase {

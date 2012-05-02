@@ -11,10 +11,12 @@
             <fileset dir="target/jbossas"/>
         </copy>
 
+<!--
         <condition property="jbossts.add.jts" value="true">
        	    <istrue value="${jbossts.jts}"/>
         </condition>
         <antcall target="build-jbossts.add-jts"/>
+-->
 
         <condition property="jbossts.add.hqobjectstore" value="true">
        	    <istrue value="${jbossts.hqobjectstore}"/>
@@ -23,10 +25,12 @@
 
     </target>
 
+<!--
     <target name="build-jbossts.add-jts" if="jbossts.add.jts">
         <ts.config-as.add-jts name="jbossas-jbossts"/>
     </target>
-    
+-->
+
     <target name="build-jbossts.add-hqobjectstore" if="jbossts.add.hqobjectstore">
         <ts.config-as.add-hq-object-store name="jbossas-jbossts"/>
     </target>

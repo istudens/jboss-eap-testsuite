@@ -32,8 +32,8 @@
         <version>6.0.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jboss-eap-testsuite-integration-domain</artifactId>
-    <name>JBoss EAP Server Test Suite: Domain Mode Integration Tests</name>
+    <artifactId>jboss-eap-testsuite-domain</artifactId>
+    <name>JBoss EAP Server Test Suite: Domain Mode Tests</name>
 
     <properties>
 

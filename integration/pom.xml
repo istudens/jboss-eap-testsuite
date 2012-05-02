@@ -57,17 +57,6 @@
                 <module>manualmode</module>
             </modules>
         </profile>
-        <!-- Define ts.integration uber-group. -->
-        <profile>
-            <id>ts.integ.allGroups2</id>
-            <activation><property><name>ts.integration</name></property></activation>
-            <modules>
-                <module>basic</module>
-                <module>clust</module>
-                <module>multinode</module>
-                <module>manualmode</module>
-            </modules>
-        </profile>
 
         <!-- -Dts.basic -->
         <profile>

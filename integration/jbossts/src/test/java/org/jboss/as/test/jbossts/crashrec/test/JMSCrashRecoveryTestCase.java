@@ -51,7 +51,8 @@ import static org.junit.Assert.assertNull;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ManualServerSetup({
-        CrashRecoveryTestBase.TxEnvironmentSetup.class,
+        TxEnvironmentSetup.class,
+        CrashRecoveryTestBase.TxEnvironmentCheck.class,
         JMSCrashRecoveryTestCase.JmsQueueSetup.class})
 public class JMSCrashRecoveryTestCase extends CrashRecoveryTestBase {
     private static final Logger log = Logger.getLogger(JMSCrashRecoveryTestCase.class);

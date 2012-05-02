@@ -41,30 +41,36 @@ import static org.junit.Assert.assertTrue;
 
 
 /**
- * Transaction Tooling tests.
- * The tests invoke un-recoverable events and then clean the tx log with tooling via Management API.
+ * Transaction Tooling tests applicable only for JTS tx mode.
  *
  * @author <a href="istudens@redhat.com">Ivo Studensky</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 @ManualServerSetup({TxEnvironmentSetup.class, ToolingTestBase.JmsQueueSetup.class})
-public class ToolingTestCase extends ToolingTestBase {
-    protected static final Logger log = Logger.getLogger(ToolingTestCase.class);
+public class ToolingTestCaseJTSOnly extends ToolingTestBase {
+    protected static final Logger log = Logger.getLogger(ToolingTestCaseJTSOnly.class);
 
     /**
-     * Crashes the server at commit phase on TestXAResource after the commit was invoked on JMS XA resource.
-     * This scenario is not fully supported yet by JBossTS which allows us to use it for tooling testing.
-     * This test case will most likely stop working once JBTM-860 is done.
+     * Crashes the server before the Transaction Manager creates a chance to create a record of the TestXAResource's
+     * XAResourceRecord. This means that the TestXAResource will be "orphaned" (i.e. the TestXAResource prepared
+     * but crashed before the TM recorded the fact).
+     * To be precise, it first calls prepare on JMS XA resource and then on TestXAResource.
+     * JTA orphan recovery does not work for JTS, thus the orphan is not getting cleaned up automatically.
+     *
+     * IGNORED since the transaction is recovered in this scenario and only the orphan of TestXAResource stays
+     * in the object store. Unfortunetaly there is no way to delete such orphan by transaction tooling as it can
+     * only touch the transactions and their participants.
      */
     @Test
-    public void commitHalt(@ArquillianResource ManagementClient managementClient) throws Throwable {
+    @Ignore
+    public void jtsOrphans(@ArquillianResource ManagementClient managementClient) throws Throwable {
         this.managementClient = managementClient;
 
         cleanLog();
 
         instrumentor.injectOnCall(ToolingCrashBean.class, "after", "$0.enlistXAResource(1)");
-        instrumentor.crashAtMethodEntry(TestXAResource.class, "commit");
+        instrumentor.crashAtMethodExit(TestXAResource.class, "prepare");
 
         execute(true);
 
@@ -72,12 +78,12 @@ public class ToolingTestCase extends ToolingTestBase {
         instrumentedJMSXAResource.assertKnownInstances(1);
         instrumentedJMSXAResource.assertMethodCalled("prepare");
         instrumentedJMSXAResource.assertMethodNotCalled("rollback");
-        instrumentedJMSXAResource.assertMethodCalled("commit");
+        instrumentedJMSXAResource.assertMethodNotCalled("commit");
 
         instrumentedTestXAResource.assertKnownInstances(1);
         instrumentedTestXAResource.assertMethodCalled("prepare");
         instrumentedTestXAResource.assertMethodNotCalled("rollback");
-        instrumentedTestXAResource.assertMethodCalled("commit");
+        instrumentedTestXAResource.assertMethodNotCalled("commit");
 
         rebootServer(controller);
 
@@ -90,20 +96,39 @@ public class ToolingTestCase extends ToolingTestBase {
         log.info("tx type " + getTypeOfTx(transactionId));
 
         List<ModelNode> participants = getParticipantsOfTx(transactionId);
-        assertEquals("Expects two participants of the tx", 2, participants.size());
-
+        assertTrue("Expects some participants of the tx", participants.size() > 0);
         for (ModelNode participant : participants) {
             String participantId = participant.asString();
             log.info("got a participant: " + participantId);
+            recoverParticipant(transactionId, participantId);
+        }
 
-            for (Property property : getParticipantResources(transactionId, participantId)) {
-                log.info("participant's property " + property.getName() + " = " + property.getValue());
-                if (property.getName().equals("status")) {
-                    assertEquals("Wrong participant status", "PREPARED", property.getValue().asString());
-                }
+        instrumentedJMSXAResource.assertKnownInstances(1);
+        instrumentedJMSXAResource.assertMethodCalled("rollback");
+        instrumentedJMSXAResource.assertMethodNotCalled("commit");
 
-                // just try it if it can pass, but no action triggered actually :)
-                recoverParticipant(transactionId, participantId);
+        instrumentedTestXAResource.assertKnownInstances(1);
+        instrumentedTestXAResource.assertMethodNotCalled("rollback");
+        instrumentedTestXAResource.assertMethodNotCalled("commit");
+
+        probeLog();
+        indoubtTxs = getTxsFromLog();
+        assertEquals("Still expects one indoubt tx in txlog", 1, indoubtTxs.size());
+
+        transactionId = indoubtTxs.get(0).asString();
+        log.info("got a transaction " + transactionId);
+        log.info("tx type " + getTypeOfTx(transactionId));
+
+        participants = getParticipantsOfTx(transactionId);
+        assertEquals("Expects one participant of the tx", 1, participants.size());
+
+        String participantId = participants.iterator().next().asString();
+        log.info("got a participant: " + participantId);
+
+        for (Property property : getParticipantResources(transactionId, participantId)) {
+            log.info("participant's property " + property.getName() + " = " + property.getValue());
+            if (property.getName().equals("status")) {
+                assertEquals("Wrong participant status", "PREPARED", property.getValue().asString());
             }
         }
 

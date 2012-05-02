@@ -55,7 +55,8 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ManualServerSetup({
-        CrashRecoveryTestBase.TxEnvironmentSetup.class,
+        TxEnvironmentSetup.class,
+        CrashRecoveryTestBase.TxEnvironmentCheck.class,
         JPACrashRecoveryTestCase.SecurityDomainSetup.class,
         JPACrashRecoveryTestCase.SecurityDomain0Setup.class,
         JPACrashRecoveryTestCase.XADatasourceSetup.class})

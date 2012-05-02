@@ -69,7 +69,7 @@ public abstract class CrashRecoveryTestBase {
 
     protected static final String STORE_TYPE = System.getProperty("jbossts.store.type");
     protected static final String SERVER_PATH = System.getProperty("jboss.dist");
-    protected static final boolean WIPE_OUT_TXS = Boolean.parseBoolean(System.getProperty("jbossts.wipeout.txs", "false"));
+    protected static final boolean WIPE_OUT_TXS = Boolean.getBoolean("jbossts.wipeout.txs");
 
     protected static Instrumentor instrumentor = null;
     protected InstrumentedClass instrumentedTestSynchronization;
@@ -554,14 +554,11 @@ public abstract class CrashRecoveryTestBase {
     }
 
 
-    static class TxEnvironmentSetup extends AbstractMgmtServerSetupTask {
+    static class TxEnvironmentCheck extends AbstractMgmtServerSetupTask {
 
         @Override
         protected void doSetup(final ManagementClient managementClient) throws Exception {
-            log.debug("TxEnvironmentSetup.doSetup");
-            if (! checkRecoveryListener()) {
-                enableRecoveryListener();
-            }
+            log.debug("TxEnvironmentCheck.doSetup");
             recoveryManagerPort = getRecoveryManagerPort();
             recoveryManagerHost = managementClient.getMgmtAddress();
             remoteJmxUrl = managementClient.getRemoteJMXURL();
@@ -569,42 +566,8 @@ public abstract class CrashRecoveryTestBase {
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            log.debug("TxEnvironmentSetup.tearDown");
+            log.debug("TxEnvironmentCheck.tearDown");
             // nothing to do here
-        }
-
-        /**
-         * Enables recovery listener on the recovery environment of jboss transactions.
-         * Note: This operation needs server restart, but all the test here are crash tests
-         * and thus restarts the server each time before checking the recovery status.
-         */
-        private void enableRecoveryListener() throws IOException, MgmtOperationException {
-            /*     /subsystem=transactions:write-attribute(name=recovery-listener,value=true)   */
-            final ModelNode address = new ModelNode();
-            address.add("subsystem", "transactions");
-            final ModelNode operation = new ModelNode();
-            operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-            operation.get(OP_ADDR).set(address);
-            operation.get("name").set("recovery-listener");
-            operation.get("value").set("true");
-            log.info("operation=" + operation);
-            executeOperation(operation);
-        }
-
-        private boolean checkRecoveryListener() throws IOException {
-            /*     /subsystem=transactions:read-attribute(name=recovery-listener)   */
-            final ModelNode address = new ModelNode();
-            address.add("subsystem", "transactions");
-            final ModelNode operation = new ModelNode();
-            operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
-            operation.get(OP_ADDR).set(address);
-            operation.get("name").set("recovery-listener");
-
-            try {
-                return executeOperation(operation).asBoolean();
-            } catch (MgmtOperationException ignored) {
-            }
-            return false;
         }
 
         private int getRecoveryManagerPort() throws IOException {

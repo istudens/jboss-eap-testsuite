@@ -69,7 +69,11 @@
     <name>JBoss EAP Server Test Suite: Aggregator</name>
 
     <modules>
+        <module>benchmark</module>
+        <module>compat</module>
+        <module>domain</module>
         <module>integration</module>
+        <module>stress</module>
     </modules>
 
 
