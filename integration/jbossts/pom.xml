@@ -26,8 +26,8 @@
 
         <version.jbossts>4.16.3.Final</version.jbossts>
 
-        <ds.second.jdbc.url></ds.second.jdbc.url>
         <jbossts.credentials>cr1</jbossts.credentials>
+        <ds.second.jdbc.url></ds.second.jdbc.url>
         <report.name.suffix></report.name.suffix>
     </properties>
 
@@ -367,6 +367,7 @@
             </build>
         </profile>
 
+        <!--  Profiles for testing different scenarios of jca credentials  -->
         <profile>
             <id>jbossts.credentials.cr2.profile</id>
             <activation>
@@ -404,21 +405,7 @@
             </properties>
         </profile>
 
-<!--
-        <profile>
-            <id>jbossts.jts.profile</id>
-            <activation>
-                <property>
-                    <name>jbossts.jts</name>
-                </property>
-            </activation>
-            <properties>
-                <jbossts.jts>true</jbossts.jts>
-                <jbossts.store.type>StateManager/BasicAction/TwoPhaseCoordinator/ArjunaTransactionImple</jbossts.store.type>
-            </properties>
-        </profile>
--->
-
+        <!--  HornetQ journal based object store profile  -->
         <profile>
             <id>jbossts.hqobjectstore.profile</id>
             <activation>
@@ -432,22 +419,44 @@
             </properties>
         </profile>
 
+
+        <!-- Oracle 11g R1 RAC -->
         <profile>
             <!-- specific profile for database changes  -->
-            <id>oraclerac.profile</id>
+            <id>oracle11gR1RAC.profile</id>
             <activation>
                 <property>
                     <name>ds</name>
-                    <value>oraclerac</value>
+                    <value>oracle11gR1RAC</value>
                 </property>
             </activation>
             <properties>
-                <ds.db>oracle</ds.db>
+                <ds.db>oracle11gR1RAC</ds.db>
                 <ds.jdbc.driver>oracle.jdbc.OracleDriver</ds.jdbc.driver>
                 <ds.jdbc.driver-xa>oracle.jdbc.xa.client.OracleXADataSource</ds.jdbc.driver-xa>
-                <ds.jdbc.url>jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=test)))</ds.jdbc.url>
-                <ds.second.jdbc.url>jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=test)))</ds.second.jdbc.url>
-                <ds.jdbc.driver.version>11.1.0.7.0</ds.jdbc.driver.version>
+                <ds.jdbc.url>jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=vmg24-vip.mw.lab.eng.bos.redhat.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=qarac.jboss)))</ds.jdbc.url>
+                <ds.second.jdbc.url>jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=vmg25-vip.mw.lab.eng.bos.redhat.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=qarac.jboss)))</ds.second.jdbc.url>
+                <ds.jdbc.driver.version>ojdbc6.jar</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+
+        <!-- Oracle 11g R2 RAC -->
+        <profile>
+            <!-- specific profile for database changes  -->
+            <id>oracle11gR2RAC.profile</id>
+            <activation>
+                <property>
+                    <name>ds</name>
+                    <value>oracle11gR2RAC</value>
+                </property>
+            </activation>
+            <properties>
+                <ds.db>oracle11gR2RAC</ds.db>
+                <ds.jdbc.driver>oracle.jdbc.OracleDriver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>oracle.jdbc.xa.client.OracleXADataSource</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=vmg27-vip.mw.lab.eng.bos.redhat.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=qarac.jboss)))</ds.jdbc.url>
+                <ds.second.jdbc.url>jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=vmg28-vip.mw.lab.eng.bos.redhat.com)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=qarac.jboss)))</ds.second.jdbc.url>
+                <ds.jdbc.driver.version>ojdbc6.jar</ds.jdbc.driver.version>
             </properties>
         </profile>
 

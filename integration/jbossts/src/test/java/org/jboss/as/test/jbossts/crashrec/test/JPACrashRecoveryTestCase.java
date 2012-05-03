@@ -78,7 +78,8 @@ public class JPACrashRecoveryTestCase extends CrashRecoveryTestBase {
     private static final Databases database;
     static {
         try {
-            database = Databases.valueOf(DS_DB.toUpperCase());
+            String dbName = (DS_DB.startsWith("db2")) ? "db2" : DS_DB.replaceFirst("\\d+.*$", "");   // strip off any numbers, i.e. version of DB
+            database = Databases.valueOf(dbName.toUpperCase());
         } catch (Exception e) {
             throw new IllegalArgumentException("Unsupported database " + DS_DB + "! Please provide a proper one with -Dds= parameter according to testsuite/pom.xml.");
         }
@@ -288,7 +289,8 @@ public class JPACrashRecoveryTestCase extends CrashRecoveryTestBase {
             if (database == Databases.ORACLE) {
                 addXADataSourceProperty(address, "URL", getJdbcUrl());
             } else {
-                Matcher matcher = Pattern.compile("://(.*?):(\\d+)").matcher(getJdbcUrl());
+                String pattern = (database == Databases.SYBASE) ? "jdbc:sybase:Tds:(.*?):(\\d+)" : "://(.*?):(\\d+)";
+                Matcher matcher = Pattern.compile(pattern).matcher(getJdbcUrl());
                 matcher.find();
                 String host = matcher.group(1);
                 String port = matcher.group(2);

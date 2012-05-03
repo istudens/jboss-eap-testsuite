@@ -80,6 +80,7 @@
     <!-- Global testsuite system properties defaults. -->
 
     <properties>
+        <version.jbosseap>6.0.0</version.jbosseap>
         <version.jbossas>7.1.1.Final</version.jbossas>
         <version.arquillian_as7>7.1.1.Final</version.arquillian_as7>
         <version.org.jboss.arquillian.core>1.0.0.Final</version.org.jboss.arquillian.core>
@@ -143,8 +144,8 @@
         <ds.jdbc.driver-xa></ds.jdbc.driver-xa>
         <ds.jdbc.driver.version></ds.jdbc.driver.version>
         <ds.jdbc.url></ds.jdbc.url>
-        <ds.jdbc.user>test</ds.jdbc.user>
-        <ds.jdbc.pass>test</ds.jdbc.pass>
+        <ds.jdbc.user>jbossqa</ds.jdbc.user>
+        <ds.jdbc.pass>jbossqa</ds.jdbc.pass>
         <ds.jdbc.driver.jar>${ds.db}-jdbc-driver.jar</ds.jdbc.driver.jar>
 
         <!-- Common surefire properties. -->
@@ -715,42 +716,22 @@
             -->
             <id>ds.profile</id>
             <activation><property><name>ds</name></property></activation>
-            <dependencies>
-                <dependency>
-                    <groupId>jdbcdrivers</groupId>
-                    <artifactId>${ds.db}</artifactId>
-                    <version>${ds.jdbc.driver.version}</version>
-                </dependency>
-            </dependencies>
-            <repositories>
-                <repository>
-                    <id>JBoss QA repository</id>
-                    <url>http://nexus.qa.jboss.com:8081/nexus/content/repositories/thirdparty</url>
-                </repository>
-            </repositories>
             <build>
                 <plugins>
                     <!-- Copy the JDBC driver to target/jdbcDrivers. -->
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-dependency-plugin</artifactId>
-                        <executions combine.children="append">
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>wagon-maven-plugin</artifactId>
+                        <version>1.0-beta-4</version>
+                        <executions>
                             <execution>
                                 <id>ts.config-as.db.copy-jdbc-jars</id>
-                                <goals><goal>copy</goal></goals>
+                                <goals><goal>download-single</goal></goals>
                                 <phase>process-sources</phase>
-                                <inherited>true</inherited>
                                 <configuration>
-                                    <artifactItems>
-                                        <artifactItem>
-                                            <groupId>jdbcdrivers</groupId>
-                                            <artifactId>${ds.db}</artifactId>
-                                            <version>${ds.jdbc.driver.version}</version>
-                                            <destFileName>${ds.jdbc.driver.jar}</destFileName>
-                                        </artifactItem>
-                                    </artifactItems>
-                                    <outputDirectory>${basedir}/target/jdbcDrivers</outputDirectory>
-                                    <stripVersion>true</stripVersion>
+                                    <url>http://www.qa.jboss.com</url>
+                                    <fromFile>jdbc-drivers-products/EAP/${version.jbosseap}/${ds.db}/jdbc4/${ds.jdbc.driver.version}</fromFile>
+                                    <toFile>${basedir}/target/jdbcDrivers/${ds.jdbc.driver.jar}</toFile>
                                 </configuration>
                             </execution>
                         </executions>
@@ -806,7 +787,7 @@
                                         <resource>
                                             <directory>${basedir}/target/jdbcDrivers</directory>
                                             <includes>
-                                                <include>${ds.db}-jdbc-driver.jar</include>
+                                                <include>${ds.jdbc.driver.jar}</include>
                                             </includes>
                                         </resource>
                                     </resources>
@@ -848,13 +829,36 @@
         <!-- MySQL 5.1 -->
         <profile>
             <id>mysql51.profile</id>
-            <activation><property><name>ds</name><value>mysql51</value></property></activation>
+            <activation>
+                <property>
+                    <name>ds</name>
+                    <value>mysql51</value>
+                </property>
+            </activation>
             <properties>
-                <ds.db>mysql</ds.db>
+                <ds.db>mysql51</ds.db>
                 <ds.jdbc.driver>com.mysql.jdbc.Driver</ds.jdbc.driver>
                 <ds.jdbc.driver-xa>com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</ds.jdbc.driver-xa>
-                <ds.jdbc.url>jdbc:mysql://localhost:3306/test</ds.jdbc.url>
-                <ds.jdbc.driver.version>5.1.17</ds.jdbc.driver.version>
+                <ds.jdbc.url>jdbc:mysql://vmg02.mw.lab.eng.bos.redhat.com:3306/jbossqa</ds.jdbc.url>
+                <ds.jdbc.driver.version>mysql-connector-java-5.1.17-bin.jar</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+
+        <!-- MySQL 5.5 -->
+        <profile>
+            <id>mysql55.profile</id>
+            <activation>
+                <property>
+                    <name>ds</name>
+                    <value>mysql55</value>
+                </property>
+            </activation>
+            <properties>
+                <ds.db>mysql55</ds.db>
+                <ds.jdbc.driver>com.mysql.jdbc.Driver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:mysql://db01.mw.lab.eng.bos.redhat.com:3306/jbossqa</ds.jdbc.url>
+                <ds.jdbc.driver.version>mysql-connector-java-5.1.17-bin.jar</ds.jdbc.driver.version>
             </properties>
         </profile>
 
@@ -869,30 +873,144 @@
                 </property>
             </activation>
             <properties>
-                <ds.db>postgresql</ds.db>
+                <ds.db>postgresql84</ds.db>
                 <ds.jdbc.driver>org.postgresql.Driver</ds.jdbc.driver>
                 <ds.jdbc.driver-xa>org.postgresql.xa.PGXADataSource</ds.jdbc.driver-xa>
-                <ds.jdbc.url>jdbc:postgresql://localhost:5432/test</ds.jdbc.url>
-                <ds.jdbc.driver.version>8.4.702</ds.jdbc.driver.version>
+                <ds.jdbc.url>jdbc:postgresql://postgresql04.mw.lab.eng.bos.redhat.com:5432/jbossqa</ds.jdbc.url>
+                <ds.jdbc.driver.version>postgresql-8.4-703.jdbc4.jar</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+
+        <!-- PostgreSQL 9.1 -->
+        <profile>
+            <!-- specific profile for database changes  -->
+            <id>postgresql91.profile</id>
+            <activation>
+                <property>
+                    <name>ds</name>
+                    <value>postgresql91</value>
+                </property>
+            </activation>
+            <properties>
+                <ds.db>postgresql91</ds.db>
+                <ds.jdbc.driver>org.postgresql.Driver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>org.postgresql.xa.PGXADataSource</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:postgresql://db02.mw.lab.eng.bos.redhat.com:5432/jbossqa</ds.jdbc.url>
+                <ds.jdbc.driver.version>postgresql-9.1-901.jdbc4.jar</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+
+        <!-- Sybase 15.7 -->
+        <profile>
+            <!-- specific profile for database changes  -->
+            <id>sybase157.profile</id>
+            <activation>
+                <property>
+                    <name>ds</name>
+                    <value>sybase157</value>
+                </property>
+            </activation>
+            <properties>
+                <ds.db>sybase157</ds.db>
+                <ds.jdbc.driver>com.sybase.jdbc4.jdbc.SybDriver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>com.sybase.jdbc4.jdbc.SybXADataSource</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:sybase:Tds:db05.mw.lab.eng.bos.redhat.com:5000/jbossqa</ds.jdbc.url>
+                <ds.jdbc.driver.version>jconn4-26666.jar</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+
+        <!-- DB2 9.7 -->
+        <profile>
+            <!-- specific profile for database changes  -->
+            <id>db2-97.profile</id>
+            <activation>
+                <property>
+                    <name>ds</name>
+                    <value>db2-97</value>
+                </property>
+            </activation>
+            <properties>
+                <ds.db>db2-97</ds.db>
+                <ds.jdbc.driver>com.ibm.db2.jcc.DB2Driver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>com.ibm.db2.jcc.DB2XADataSource</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:db2://vmg06.mw.lab.eng.bos.redhat.com:50000/jbossqa</ds.jdbc.url>
+                <ds.jdbc.driver.version>db2jcc4.jar</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+
+        <!-- Oracle 11g R1 -->
+        <profile>
+            <!-- specific profile for database changes  -->
+            <id>oracle11gR1.profile</id>
+            <activation>
+                <property>
+                    <name>ds</name>
+                    <value>oracle11gR1</value>
+                </property>
+            </activation>
+            <properties>
+                <ds.db>oracle11gR1</ds.db>
+                <ds.jdbc.driver>oracle.jdbc.OracleDriver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>oracle.jdbc.xa.client.OracleXADataSource</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:oracle:thin:@db03.mw.lab.eng.bos.redhat.com:1521:qaora11</ds.jdbc.url>
+                <ds.jdbc.driver.version>ojdbc6.jar</ds.jdbc.driver.version>
             </properties>
         </profile>
 
         <!-- Oracle 11g R2 -->
         <profile>
             <!-- specific profile for database changes  -->
-            <id>oracle11r2.profile</id>
+            <id>oracle11gR2.profile</id>
             <activation>
                 <property>
                     <name>ds</name>
-                    <value>oracle11r2</value>
+                    <value>oracle11gR2</value>
                 </property>
             </activation>
             <properties>
-                <ds.db>oracle</ds.db>
+                <ds.db>oracle11gR2</ds.db>
                 <ds.jdbc.driver>oracle.jdbc.OracleDriver</ds.jdbc.driver>
                 <ds.jdbc.driver-xa>oracle.jdbc.xa.client.OracleXADataSource</ds.jdbc.driver-xa>
                 <ds.jdbc.url>jdbc:oracle:thin:@db04.mw.lab.eng.bos.redhat.com:1521:qaora11</ds.jdbc.url>
-                <ds.jdbc.driver.version>11.2.0.2.0</ds.jdbc.driver.version>
+                <ds.jdbc.driver.version>ojdbc6.jar</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+
+        <!-- MSSQL 2008 R1 -->
+        <profile>
+            <!-- specific profile for database changes  -->
+            <id>mssql2008R1.profile</id>
+            <activation>
+                <property>
+                    <name>ds</name>
+                    <value>mssql2008R1</value>
+                </property>
+            </activation>
+            <properties>
+                <ds.db>mssql2008R1</ds.db>
+                <ds.jdbc.driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>com.microsoft.sqlserver.jdbc.SQLServerXADataSource</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:microsoft:sqlserver://vmg04.mw.lab.eng.bos.redhat.com:1433;DatabaseName=jbossqa</ds.jdbc.url>
+                <ds.jdbc.driver.version>sqljdbc4.jar</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+
+        <!-- MSSQL 2008 R2 -->
+        <profile>
+            <!-- specific profile for database changes  -->
+            <id>mssql2008R2.profile</id>
+            <activation>
+                <property>
+                    <name>ds</name>
+                    <value>mssql2008R2</value>
+                </property>
+            </activation>
+            <properties>
+                <ds.db>mssql2008R2</ds.db>
+                <ds.jdbc.driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>com.microsoft.sqlserver.jdbc.SQLServerXADataSource</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:microsoft:sqlserver://mssql01.mw.lab.eng.bos.redhat.com:1433;DatabaseName=jbossqa</ds.jdbc.url>
+                <ds.jdbc.driver.version>sqljdbc4.jar</ds.jdbc.driver.version>
             </properties>
         </profile>
 
